@@ -140,9 +140,11 @@ function ItemPreviews.styler:ProcessItem(item, context)
     end
 
     local itemPreviewInfo = {}
+    itemPreviewInfo.textColor = "#bfbfbf"
     self:BaseName(item, itemPreviewInfo, context)
     self:Count(item, itemPreviewInfo, context)
     self:DisplayName(item, itemPreviewInfo, context)
+    self:Enchantments(item, itemPreviewInfo, context)
 
     self:ShowPreview(item, itemPreviewInfo, context)
 end
@@ -238,6 +240,84 @@ function ItemPreviews.styler:DisplayName(item, itemPreviewInfo, context)
 
 end
 
+function ItemPreviews.styler:Enchantments(item, itemPreviewInfo, context)
+
+    if(context.edition == EDITION.JAVA) then
+    
+        if(item:contains("tag", TYPE.COMPOUND)) then
+            item.tag = item.lastFound
+    
+            if(item.tag:contains("Enchantments", TYPE.LIST, TYPE.COMPOUND) or item.tag:contains("StoredEnchantments", TYPE.LIST, TYPE.COMPOUND)) then
+                local enchList = item.tag.lastFound
+
+                if(enchList.childCount > 0) then
+                    itemPreviewInfo.textColor = "magenta"
+
+                    for i=0, enchList.childCount-1 do
+                        local ench = enchList:child(i)
+
+                        if(ench:contains("id", TYPE.STRING)) then
+                            local dbEntry = Database:find(context.edition, "enchantments", tostring(ench.lastFound.value))
+
+                            if(dbEntry.valid) then
+                                ench.name = dbEntry.name
+
+                                if(ench:contains("lvl", TYPE.SHORT)) then
+                                    local lvl = ench.lastFound.value
+
+                                    if(lvl > 0) then
+                                        ench.name = ench.name .. " " .. lvl
+                                    end
+                                end
+
+                                Style:setLabel(ench, ench.name)
+                                Style:setLabelColor(ench, "#bfbfbf")
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+    elseif(context.edition == EDITION.BEDROCK or context.edition == EDITION.CONSOLE) then
+        
+        if(item:contains("tag", TYPE.COMPOUND)) then
+            item.tag = item.lastFound
+    
+            if(item.tag:contains("ench", TYPE.LIST, TYPE.COMPOUND) or item.tag:contains("StoredEnchantments", TYPE.LIST, TYPE.COMPOUND)) then
+                local enchList = item.tag.lastFound
+
+                if(enchList.childCount > 0) then
+                    itemPreviewInfo.textColor = "magenta"
+
+                    for i=0, enchList.childCount-1 do
+                        local ench = enchList:child(i)
+
+                        if(ench:contains("id", TYPE.SHORT)) then
+                            local dbEntry = Database:find(context.edition, "enchantments", tostring(ench.lastFound.value))
+
+                            if(dbEntry.valid) then
+                                ench.name = dbEntry.name
+
+                                if(ench:contains("lvl", TYPE.SHORT)) then
+                                    local lvl = ench.lastFound.value
+
+                                    if(lvl > 0) then
+                                        ench.name = ench.name .. " " .. lvl
+                                    end
+                                end
+
+                                Style:setLabel(ench, ench.name)
+                                Style:setLabelColor(ench, "#bfbfbf")
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
 function ItemPreviews.styler:ShowPreview(item, itemPreviewInfo, context)
 
     local text = itemPreviewInfo.baseName
@@ -250,7 +330,7 @@ function ItemPreviews.styler:ShowPreview(item, itemPreviewInfo, context)
     end
 
     Style:setLabel(item, text)
-    Style:setLabelColor(item, "#bfbfbf")
+    Style:setLabelColor(item, itemPreviewInfo.textColor)
 
 end
 
