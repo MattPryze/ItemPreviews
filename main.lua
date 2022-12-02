@@ -242,78 +242,50 @@ end
 
 function ItemPreviews.styler:Enchantments(item, itemPreviewInfo, context)
 
-    if(context.edition == EDITION.JAVA) then
-    
-        if(item:contains("tag", TYPE.COMPOUND)) then
-            item.tag = item.lastFound
-    
-            if(item.tag:contains("Enchantments", TYPE.LIST, TYPE.COMPOUND) or item.tag:contains("StoredEnchantments", TYPE.LIST, TYPE.COMPOUND)) then
-                local enchList = item.tag.lastFound
+    if(item:contains("tag", TYPE.COMPOUND)) then
+        local tag = item.lastFound
 
-                if(enchList.childCount > 0) then
-                    itemPreviewInfo.textColor = "magenta"
+        for i=0, tag.childCount-1 do
+            local child = tag:child(i)
+            if(child.name ~= "Enchantments" and child.name ~= "ench" and child.name ~= "StoredEnchantments") then goto loopContinue end
+            if(child.type ~= TYPE.LIST or child.listType ~= TYPE.COMPOUND) then goto loopContinue end
+            if(child.childCount == 0) then goto loopContinue end
 
-                    for i=0, enchList.childCount-1 do
-                        local ench = enchList:child(i)
+            local enchList = child
+            itemPreviewInfo.textColor = "magenta"
 
-                        if(ench:contains("id", TYPE.STRING)) then
-                            local dbEntry = Database:find(context.edition, "enchantments", tostring(ench.lastFound.value))
+            for i=0, enchList.childCount-1 do
+                local ench = enchList:child(i)
 
-                            if(dbEntry.valid) then
-                                ench.name = dbEntry.name
+                if(ench:contains("id", TYPE.STRING)) then
+                    ench.id = ench.lastFound.value
+                elseif(ench:contains("id", TYPE.SHORT)) then
+                    ench.id = tostring(ench.lastFound.value)
+                else
+                    goto loopContinue1
+                end
 
-                                if(ench:contains("lvl", TYPE.SHORT)) then
-                                    local lvl = ench.lastFound.value
+                local dbEntry = Database:find(context.edition, "enchantments", ench.id)
 
-                                    if(lvl > 0) then
-                                        ench.name = ench.name .. " " .. lvl
-                                    end
-                                end
+                if(dbEntry.valid) then
+                    ench.prettyName = dbEntry.name
 
-                                Style:setLabel(ench, ench.name)
-                                Style:setLabelColor(ench, "#bfbfbf")
-                            end
+                    if(ench:contains("lvl", TYPE.SHORT)) then
+                        local lvl = ench.lastFound.value
+
+                        if(lvl > 0) then
+                            ench.prettyName = ench.prettyName .. " " .. lvl
                         end
                     end
+
+                    Style:setLabel(ench, ench.prettyName)
+                    Style:setLabelColor(ench, "#bfbfbf")
                 end
+
+                ::loopContinue1::
             end
-        end
 
-    elseif(context.edition == EDITION.BEDROCK or context.edition == EDITION.CONSOLE) then
-        
-        if(item:contains("tag", TYPE.COMPOUND)) then
-            item.tag = item.lastFound
-    
-            if(item.tag:contains("ench", TYPE.LIST, TYPE.COMPOUND) or item.tag:contains("StoredEnchantments", TYPE.LIST, TYPE.COMPOUND)) then
-                local enchList = item.tag.lastFound
-
-                if(enchList.childCount > 0) then
-                    itemPreviewInfo.textColor = "magenta"
-
-                    for i=0, enchList.childCount-1 do
-                        local ench = enchList:child(i)
-
-                        if(ench:contains("id", TYPE.SHORT)) then
-                            local dbEntry = Database:find(context.edition, "enchantments", tostring(ench.lastFound.value))
-
-                            if(dbEntry.valid) then
-                                ench.name = dbEntry.name
-
-                                if(ench:contains("lvl", TYPE.SHORT)) then
-                                    local lvl = ench.lastFound.value
-
-                                    if(lvl > 0) then
-                                        ench.name = ench.name .. " " .. lvl
-                                    end
-                                end
-
-                                Style:setLabel(ench, ench.name)
-                                Style:setLabelColor(ench, "#bfbfbf")
-                            end
-                        end
-                    end
-                end
-            end
+            ::loopContinue::
         end
     end
 end
