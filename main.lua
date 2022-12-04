@@ -31,11 +31,11 @@ function ItemPreviews.styler:main(root, context)
     --TODO
     --better version checking
 
-    context.version = -1
+    ItemPreviews.styler.version = -1
 
     if(context.edition == EDITION.JAVA) then -- DataVersion
         if(root:contains("DataVersion", TYPE.INT)) then
-            context.version = root.lastFound.value
+            ItemPreviews.styler.version = root.lastFound.value
         end
     end
 
@@ -127,12 +127,12 @@ end
 function ItemPreviews.styler:ProcessItem(item, context)
 
     --load entries from database
-    item.itemEntry = Database:find(context.edition, "items", item.id, item.meta, context.version)
+    item.itemEntry = Database:find(context.edition, "items", item.id, item.meta, ItemPreviews.styler.version)
     if(not item.itemEntry.valid) then return end
 
     if(context.edition == EDITION.BEDROCK) then
         if(item.block ~= nil and item.block.id ~= nil and item.block.meta ~= nil) then
-            item.blockEntry = Database:find(context.edition, "blocks", item.block.id, item.block.meta, context.version)
+            item.blockEntry = Database:find(context.edition, "blocks", item.block.id, item.block.meta, ItemPreviews.styler.version)
             if(item.blockEntry == nil or not item.blockEntry.valid or item.blockEntry.name:len() == 0) then
                 item.blockEntry = nil
             end
