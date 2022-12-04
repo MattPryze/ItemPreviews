@@ -1,9 +1,9 @@
 {
   "link" : "https://github.com/MattPryze/ItemPreviews",
   "name" : "Item Previews",
-  "version" : 1,
+  "version" : 3,
   "author" : "Matt Pryze",
-  "description" : "Displays item information such as name and count.",
+  "description" : "Displays item information such as name, count, and enchant status.",
   "editions" : ["JAVA", "BEDROCK", "CONSOLE"],
   "extension_types" : ["NBT_EDITOR_STYLE"],
   "tags" : []

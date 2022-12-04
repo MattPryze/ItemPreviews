@@ -140,9 +140,11 @@ function ItemPreviews.styler:ProcessItem(item, context)
     end
 
     local itemPreviewInfo = {}
+    itemPreviewInfo.textColor = "#bfbfbf"
     self:BaseName(item, itemPreviewInfo, context)
     self:Count(item, itemPreviewInfo, context)
     self:DisplayName(item, itemPreviewInfo, context)
+    self:Enchantments(item, itemPreviewInfo, context)
 
     self:ShowPreview(item, itemPreviewInfo, context)
 end
@@ -238,6 +240,56 @@ function ItemPreviews.styler:DisplayName(item, itemPreviewInfo, context)
 
 end
 
+function ItemPreviews.styler:Enchantments(item, itemPreviewInfo, context)
+
+    if(item:contains("tag", TYPE.COMPOUND)) then
+        local tag = item.lastFound
+
+        for i=0, tag.childCount-1 do
+            local child = tag:child(i)
+            if(child.name ~= "Enchantments" and child.name ~= "ench" and child.name ~= "StoredEnchantments") then goto loopContinue end
+            if(child.type ~= TYPE.LIST or child.listType ~= TYPE.COMPOUND) then goto loopContinue end
+            if(child.childCount == 0) then goto loopContinue end
+
+            local enchList = child
+            itemPreviewInfo.textColor = "magenta"
+
+            for i=0, enchList.childCount-1 do
+                local ench = enchList:child(i)
+
+                if(ench:contains("id", TYPE.STRING)) then
+                    ench.id = ench.lastFound.value
+                elseif(ench:contains("id", TYPE.SHORT)) then
+                    ench.id = tostring(ench.lastFound.value)
+                else
+                    goto loopContinue1
+                end
+
+                local dbEntry = Database:find(context.edition, "enchantments", ench.id)
+
+                if(dbEntry.valid) then
+                    ench.prettyName = dbEntry.name
+
+                    if(ench:contains("lvl", TYPE.SHORT)) then
+                        local lvl = ench.lastFound.value
+
+                        if(lvl > 0) then
+                            ench.prettyName = ench.prettyName .. " " .. lvl
+                        end
+                    end
+
+                    Style:setLabel(ench, ench.prettyName)
+                    Style:setLabelColor(ench, "#bfbfbf")
+                end
+
+                ::loopContinue1::
+            end
+
+            ::loopContinue::
+        end
+    end
+end
+
 function ItemPreviews.styler:ShowPreview(item, itemPreviewInfo, context)
 
     local text = itemPreviewInfo.baseName
@@ -250,7 +302,7 @@ function ItemPreviews.styler:ShowPreview(item, itemPreviewInfo, context)
     end
 
     Style:setLabel(item, text)
-    Style:setLabelColor(item, "#bfbfbf")
+    Style:setLabelColor(item, itemPreviewInfo.textColor)
 
 end
 
