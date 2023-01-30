@@ -141,6 +141,10 @@ function ItemPreviews.styler:ProcessItem(item, context)
 
     local itemPreviewInfo = {}
     itemPreviewInfo.textColor = "#bfbfbf"
+
+    itemPreviewInfo.icon = item.itemEntry.icon
+    if(item.blockEntry ~= nil) then itemPreviewInfo.icon = item.blockEntry.icon end
+
     self:BaseName(item, itemPreviewInfo, context)
     self:Count(item, itemPreviewInfo, context)
     self:DisplayName(item, itemPreviewInfo, context)
@@ -303,6 +307,11 @@ function ItemPreviews.styler:ShowPreview(item, itemPreviewInfo, context)
 
     Style:setLabel(item, text)
     Style:setLabelColor(item, itemPreviewInfo.textColor)
+
+    if(itemPreviewInfo.icon > 0) then
+        Style:setIcon(item, ":DB/" .. tostring(itemPreviewInfo.icon))
+    end
+    
 
 end
 
